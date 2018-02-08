@@ -138,7 +138,7 @@ i <- 2
 for (i in 1:9) {
   f <- function(theta){length(x)*log(pi)+sum(log(1+(theta-x)^2))}
   grf <- function(theta){2*sum((theta-x)/(1+(theta-x)^2))}
-  fs <- function(theta){matrix(length(x)/2,nrow =1)}
+  fs <- function(theta){matrix(length(x)/2,nrow = 1)}
   print(paste0("starting point =",s.p[i]))
   z <- nlminb(s.p[i],f,grf,fs)
   print(paste0("Fisher scoring result is ",z$par))
