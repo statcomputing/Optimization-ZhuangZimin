@@ -144,7 +144,7 @@ for (i in 1:9) {
   print(paste0("Fisher scoring result is ",z$par))
   f <- function(theta){-2*sum((theta-x)/(1+(theta-x)^2))}
   fdash <- function(theta){-2*sum((1-(theta-x)^2)/((1+(theta-x)^2))^2)}
-  result <- newton_raphson(z$par, f, fdash, maxiter=1000)
+  result <- newton_raphson(z$par, f, fdash, maxiter = 1000)
   print(paste0("Newton-Rasphon result is ", result$root))
 }
 
@@ -273,7 +273,7 @@ out <- data.frame(
 names(out) <- c("start.point","root")
 
 for(i in 1:200) {
-  result <- N_R(s.p[i],f ,fdash, maxiter=1000)
+  result <- N_R(s.p[i],f ,fdash, maxiter = 1000)
   out[i,2] <- result$root
 }
 target <- which(out$root == "Failed to Converge")
