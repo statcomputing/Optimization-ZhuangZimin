@@ -71,20 +71,20 @@ fdash <- function(theta){-2*sum((1-(theta-x)^2)/((1+(theta-x)^2))^2)}
 s.p <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
 
 for (i in 1:9) {
-  result <- newton_raphson(s.p[i],f,fdash,maxiter=100)
+  result <- newton_raphson(s.p[i],f,fdash,maxiter = 100)
   print(paste0("starting point is: ",s.p[i]))
   print(paste0("Newton Raphson result: ",result$root))
 }
 
 mean(x)
 #sample mean 3.257778
-newton_raphson(3.257778,f,fdash,maxiter=100)
+newton_raphson(3.257778,f,fdash,maxiter = 100)
 ```
 
 ##(c)
 
 ```{r}
-p.fixed <- function(p0,alpha,obs,tol = 1E-6,max.iter = 1000,verbose=F){
+p.fixed <- function(p0,alpha,obs,tol = 1E-6,max.iter = 1000,verbose = F){
   pold <- p0
   pnew <- pold + alpha * (-2)*sum((pold-obs)/(1+(pold-obs)^2))
   iter <- 1
@@ -188,10 +188,10 @@ f1<-function(theta){
   pi+sin(theta)-mean(x)
 }
 
-uniroot(f1,lower=-pi,upper=-pi/2,extendInt = "yes")$root[1]
-uniroot(f1,lower=-pi/2,upper=0,extendInt = "yes")$root[1]
-uniroot(f1,lower=0,upper=pi/2,extendInt = "yes")$root[1]
-uniroot(f1,lower=pi/2,upper=pi,extendInt = "yes")$root[1]
+uniroot(f1,lower = -pi,upper = -pi/2,extendInt = "yes")$root[1]
+uniroot(f1,lower = -pi/2,upper = 0,extendInt = "yes")$root[1]
+uniroot(f1,lower = 0,upper = pi/2,extendInt = "yes")$root[1]
+uniroot(f1,lower = pi/2,upper = pi,extendInt = "yes")$root[1]
 
 theta.mom <- c(-3.236988, 0.09539388, 3.046199) 
 ```
@@ -218,15 +218,15 @@ f <- function(theta){
 
 
 fdash <- function(theta){
-  f.d <- sum(  -1 / (1-cos(theta-x)))
+  f.d <- sum( -1 / (1-cos(theta-x)))
   return(f.d)
 }
 
 theta.mom <- c(-3.236988, 0.09539388, 3.046199)
 
-newton_raphson( -3.236988,f,fdash,maxiter=1000)
-newton_raphson( 0.09539388,f,fdash,maxiter=1000)
-newton_raphson( 3.046199,f,fdash,maxiter=1000)
+newton_raphson( -3.236988,f,fdash,maxiter = 1000)
+newton_raphson( 0.09539388,f,fdash,maxiter = 1000)
+newton_raphson( 3.046199,f,fdash,maxiter = 1000)
 ```
 
 ##(d)
@@ -234,8 +234,8 @@ newton_raphson( 3.046199,f,fdash,maxiter=1000)
 Starting point of -2.7 will give the result as -2.668857. Starting point of 2.7 will give the result as 2.848415. This indicates that the chosen of initial point is a very sensitive factor to the optimized result.
 
 ```{r}
-newton_raphson(-2.7,f,fdash,maxiter=100)
-newton_raphson(2.7,f,fdash,maxiter=100)
+newton_raphson(-2.7, f, fdash, maxiter = 100)
+newton_raphson(2.7, f, fdash, maxiter = 100)
 ```
 
 ##(e)
@@ -279,7 +279,7 @@ for(i in 1:200) {
 target <- which(out$root == "Failed to Converge")
 out$root <- round(as.numeric(out$root), digits = 10)
 out$root[target] <- c("Failed to Converge")
-out$root <-as.factor(out$root) 
+out$root <- as.factor(out$root) 
 #There are 18 levels
 i <- 1
 for (i in 1:length(levels(out$root))){
@@ -349,9 +349,9 @@ mean(r.series[2:10])
 #theta1 <- N
 #theta2 <- r
 #beetles ~ theta1*2/(2+(theta1-2)exp(-1*theta2*days)) 
-pop.mod <- nls(beetles ~ N*2/(2+(N-2)*exp((-r)*days)),start=list(N = 1200, r = 0.1716788),data=beetles, trace=TRUE)
+pop.mod <- nls(beetles ~ N*2/(2+(N-2)*exp((-r)*days)),start = list(N = 1200, r = 0.1716788),data = beetles, trace = TRUE)
 
-```
+``` 
 
 ##(b)
 
@@ -404,7 +404,7 @@ mlogl3 <- function(theta, N, days) {
 sqrt(var(log(beetles$beetles)))
 #2.03
 theta.start <- c(1200, 0.17,2.03)
-out <- nlm(mlogl3, theta.start, N=beetles$beetles,days=beetles$days,hessian = TRUE)
+out <- nlm(mlogl3, theta.start, N = beetles$beetles,days = beetles$days,hessian = TRUE)
 out
 theta.hat <- out$estimate
 #K = 820.3811422 , r = 0.1926394, sigma = 0.6440836
