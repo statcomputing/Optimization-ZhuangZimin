@@ -78,7 +78,7 @@ for (i in 1:9) {
 
 mean(x)
 #sample mean 3.257778
-newton_raphson(3.257778,f,fdash,maxiter = 100)
+newton_raphson(3.257778, f, fdash, maxiter = 100)
 ```
 
 ##(c)
