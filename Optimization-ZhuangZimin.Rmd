@@ -71,7 +71,7 @@ fdash <- function(theta){-2*sum((1-(theta-x)^2)/((1+(theta-x)^2))^2)}
 s.p <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
 
 for (i in 1:9) {
-  result <- newton_raphson(s.p[i],f,fdash,maxiter = 100)
+  result <- newton_raphson(s.p[i], f, fdash, maxiter = 100)
   print(paste0("starting point is: ",s.p[i]))
   print(paste0("Newton Raphson result: ",result$root))
 }
@@ -108,9 +108,9 @@ p.fixed <- function(p0,alpha,obs,tol = 1E-6,max.iter = 1000,verbose = F){
 x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
        3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
 
-p.fixed(p0 = -1, alpha = 1, obs = x)
-p.fixed(p0 = -1, alpha = 0.64, obs = x)
-p.fixed(p0 = -1, alpha = 0.25, obs = x)
+p.fixed(p0 = -1,alpha = 1,obs = x)
+p.fixed(p0 = -1,alpha = 0.64,obs = x)
+p.fixed(p0 = -1,alpha = 0.25,obs = x)
 #alpha = 1 will not converge.
 
 s.p <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
@@ -144,7 +144,7 @@ for (i in 1:9) {
   print(paste0("Fisher scoring result is ",z$par))
   f <- function(theta){-2*sum((theta-x)/(1+(theta-x)^2))}
   fdash <- function(theta){-2*sum((1-(theta-x)^2)/((1+(theta-x)^2))^2)}
-  result <- newton_raphson(z$par,f,fdash,maxiter=1000)
+  result <- newton_raphson(z$par, f, fdash, maxiter=1000)
   print(paste0("Newton-Rasphon result is ", result$root))
 }
 
@@ -188,10 +188,10 @@ f1<-function(theta){
   pi+sin(theta)-mean(x)
 }
 
-uniroot(f1, lower = -pi, upper = -pi/2, extendInt = "yes")$root[1]
-uniroot(f1, lower = -pi/2, upper = 0, extendInt = "yes")$root[1]
-uniroot(f1, lower = 0, upper = pi/2, extendInt = "yes")$root[1]
-uniroot(f1, lower = pi/2, upper = pi, extendInt = "yes")$root[1]
+uniroot(f1,lower = -pi,upper = -pi/2,extendInt = "yes")$root[1]
+uniroot(f1,lower = -pi/2,upper = 0,extendInt = "yes")$root[1]
+uniroot(f1,lower = 0,upper = pi/2,extendInt = "yes")$root[1]
+uniroot(f1,lower = pi/2,upper = pi,extendInt = "yes")$root[1]
 
 theta.mom <- c(-3.236988, 0.09539388, 3.046199) 
 ```
@@ -355,9 +355,11 @@ pop.mod <- nls(beetles ~ N*2/(2+(N-2)*exp((-r)*days)),start = list(N = 1200, r =
 
 ##(b)
 
+As can be seen from the contour plot, as $(K,r)$ approach $(1049.4069185 ,0.1182685)$, SSE shows the trend of decreasing.
+
 ```{r}
-K <- seq(12,1200, by = (1200-12)/99) 
-r <- seq(0.0100,1, by = (1 - 0.0100)/99)
+K <- seq(1000,1200, by = (1200-1000)/99) 
+r <- seq(0.07,0.15, by = (0.15 - 0.07)/99)
 
 n.b <- as.numeric(beetles$beetles)
 t.d <- as.numeric(beetles$days)
