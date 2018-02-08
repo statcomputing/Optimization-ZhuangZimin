@@ -1,0 +1,419 @@
+---
+title: "Optimization-ZhuangZimin"
+author: "Zimin Zhuang"
+date: "2/7/2018"
+output: pdf_document
+---
+
+```{r, echo = FALSE, warining = FALSE}
+need.packages <- function(pkg, ...)
+{
+  new.pkg <- pkg[! (pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg))
+    install.packages(new.pkg, repos = "https://cloud.r-project.org")
+  foo <- function(a, ...) suppressMessages(require(a, ...))
+  sapply(pkg, foo, character.only = TRUE)
+  invisible(NULL)
+}
+
+pkgs <- c("elliptic","knitr")
+need.packages(pkgs)
+```
+
+#1
+##(a)
+  $$L(\theta) = p_1p_2{\dots}p_n$$
+   $$lnL(\theta) = ln(p_1) + \dots + p_n$$
+   $$l(\theta) = -\sum_{i = 1}^{n}ln\pi - \sum_{i = 1}^{n}ln[1 + (x_i - \theta)^2] $$
+   $$l(\theta) = -nln\pi- \sum_{i = 1}^{n}ln[1 + (x_i - \theta)^2] $$
+   $$l'(\theta) = -0 - \sum_{i = 1}^{n}\frac{2(\theta - x_i)}{1 + (\theta - x_i) ^2}$$ 
+   $$l'(\theta) = -2\sum_{i = 1} ^ {n}\frac{(\theta - x_i)}{1 + (\theta - x_i} $$    
+   $$l''(\theta) = -2\sum_{i = 1}^{n}
+   \frac{1 + (\theta - x_i)^2 - 2(\theta - x_i)^2}
+   {[1 + (\theta - x_i) ^ 2]^2} $$
+   $$l''(\theta) = -2\sum_{i = 1}^{n}\frac{1 - (\theta - x_i)^2}{[1 + (\theta - x_i)^2]^2}$$ 
+   $$p'(x) = -\frac{2(x - \theta)}{\pi[1 + (x - \theta)^2]^2}$$
+   $$I(\theta) = \frac{4n}{\pi}\int ^ {\infty}_{-\infty}\frac{(x - \theta)^2}{[1 + (x - \theta)^2]^3}dx$$
+   $$I(\theta) = \frac{4n}{\pi}\int^{\infty}_{-\infty}\frac{x^2}{[1 + x^2]^3}dx$$
+Take substitution: $x = tan\theta$, $1 + x^2 = \frac{1}{cos^2\theta}$, we have:
+   $$I(\theta) = \frac{4n}{\pi}\int^{\infty}_{-\infty}\frac{sin^2\theta}{cos^2\theta}cos^6 \theta d(tan\theta)$$
+    $$I(\theta) = \frac{4n}{\pi}\int^{\infty}_{-\infty}\frac{1}{cos^2 \theta}sin^2 \theta cos^4 \theta d \theta$$
+    $$I(\theta) = \frac{4n}{\pi}\int^{\frac{\pi}{2}}_{-\frac{\pi}{2}}\frac{sin^22 \theta}{4}d \theta$$
+    $$I(\theta) = \frac{4n}{\pi}\frac{\pi}{8} = n/2$$
+   
+
+##(b)
+
+Log-likelihood function are given as follows:
+$$l(\theta)=-nln\pi-\sum_{i=1}^{n}ln[1+(x_i-\theta)^2]$$
+
+From the output, it is reasonable to conclude that sample mean is a good starting point.
+Compare to other starting point, if the starting point is largely departed from actual value (for example -11 or 38), optimization result will become unreasonable.
+
+```{r}
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+#theta <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
+theta <- seq(from = -20, to = 20, by = 0.2)
+i <- 1
+log.like <- rep(0,201)
+for (i in 1:201) {
+  log.like[i] <- -18*log(pi) - sum(log(1+(theta[i]-x)^2))
+}
+plot(theta,log.like,type = "l")
+
+library(elliptic)
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+f <- function(theta){-2*sum((theta-x)/(1+(theta-x)^2))}
+fdash <- function(theta){-2*sum((1-(theta-x)^2)/((1+(theta-x)^2))^2)}
+
+s.p <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
+
+for (i in 1:9) {
+  result <- newton_raphson(s.p[i],f,fdash,maxiter=100)
+  print(paste0("starting point is: ",s.p[i]))
+  print(paste0("Newton Raphson result: ",result$root))
+}
+
+mean(x)
+#sample mean 3.257778
+newton_raphson(3.257778,f,fdash,maxiter=100)
+```
+
+##(c)
+
+```{r}
+p.fixed <- function(p0,alpha,obs,tol = 1E-6,max.iter = 1000,verbose=F){
+  pold <- p0
+  pnew <- pold + alpha * (-2)*sum((pold-obs)/(1+(pold-obs)^2))
+  iter <- 1
+  while ((abs(pnew - pold) > tol) && (iter < max.iter)){
+    pold <- pnew
+    pnew <-  pold + alpha * (-2)*sum((pold-obs)/(1+(pold-obs)^2))
+    iter <- iter + 1
+    if(verbose)
+      cat("At iteration", iter, "value of p is:", pnew, "\n")
+  }
+  if (abs(pnew - pold) > tol) {
+    cat("Algorithm failed to converge \n")
+    return(c("Failed to Converge"))
+  }
+  else {
+    cat("Algorithm converged, in :" ,iter,"iterations \n")
+    return(pnew)
+  }
+}
+
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+
+p.fixed(p0 = -1,alpha = 1,obs = x)
+p.fixed(p0 = -1,alpha = 0.64,obs = x)
+p.fixed(p0 = -1,alpha = 0.25,obs = x)
+#alpha = 1 will not converge.
+
+s.p <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
+alpha <- c(1, 0.64, 0.25)
+i <- 1
+for (i in 1:9){
+  j <- 1
+  for (j in 1:3){
+    result <- p.fixed(p0 = s.p[i],alpha = alpha[j],obs = x)
+    print(paste0("For starting point ",s.p[i], ", Alpha ", 
+                 alpha[j], ". Fix-point result is ", result,".")) 
+  }
+}
+
+```
+
+##(d)
+```{r}
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+s.p <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8, 38)
+
+i <- 2
+
+for (i in 1:9) {
+  f <- function(theta){length(x)*log(pi)+sum(log(1+(theta-x)^2))}
+  grf <- function(theta){2*sum((theta-x)/(1+(theta-x)^2))}
+  fs <- function(theta){matrix(length(x)/2,nrow =1)}
+  print(paste0("starting point =",s.p[i]))
+  z <- nlminb(s.p[i],f,grf,fs)
+  print(paste0("Fisher scoring result is ",z$par))
+  f <- function(theta){-2*sum((theta-x)/(1+(theta-x)^2))}
+  fdash <- function(theta){-2*sum((1-(theta-x)^2)/((1+(theta-x)^2))^2)}
+  result <- newton_raphson(z$par,f,fdash,maxiter=1000)
+  print(paste0("Newton-Rasphon result is ", result$root))
+}
+
+```
+
+##(e)
+Comparing methods, fixed-point shows less stability than Fisher scoring-Newton Raphson method. In fixed-point method, the chosen of $\alpha$ will dramatically impact the result and it is likely fail to converge. As for speed, fixed-point are more effcient than the two steped Fisher scoring-Newton Raphson method, however, as we only have limited observations, the difference in speed is not significant.
+
+#2
+
+##(a)
+
+From the given density function, we have the log-likelihood function as:
+   $$l(\theta)=\sum_{i=1}^{19}ln(p(x;\theta))$$
+   $$l(\theta)=\sum_{i=1}^{19}ln(\frac{1-cos(x-\theta)}{2\pi})$$
+```{r}
+x <- c(3.91, 4.85, 2.28, 4.06, 3.70, 4.04, 5.46, 3.53, 2.28, 1.96,
+       2.53, 3.88, 2.22, 3.47, 4.82, 2.46, 2.99, 2.54, 0.52)
+
+theta <- seq(from = -pi, to = pi, by = 2*pi/199)
+i <- 1
+log.like <- rep(0,200)
+for (i in 1:200) {
+  log.like[i] <- sum(log((1-cos(x-theta[i]))/2*pi))
+}
+plot(theta,log.like,type = "l")
+```
+
+
+##(b)
+
+$$E[x|\theta]=\int_{0}^{2\pi}x\frac{1-cos(x-\theta)}{2\pi}$$
+$$E[x|\theta]=\frac{1}{2\pi}[\int_0^{2\pi}xdx-\int_0^{2\pi}xcos(x-\theta)dx)]$$
+   $$E[x|\theta]=\pi-\frac{1}{2\pi}(xsin(x-\theta)+cos(x-\theta))|_0^{2\pi}$$
+   $$E[x|\hat{\theta}_{moment}]=\pi+sin(\hat{\theta}_{moment})$$
+Here, solve for $\theta$ is equivalent to find a numerical solution to  $\pi+sin(\hat{\theta}_{moment})-\bar{x} = 0$. We will now use "uniroot" function to solve it. Notice that interval for $\theta$ are further seprarted into four partitions. Three unique solutions are found: -3.236988, 0.09539388 and 3.046199.
+
+```{r}
+mean(x)
+f1<-function(theta){
+  pi+sin(theta)-mean(x)
+}
+
+uniroot(f1,lower=-pi,upper=-pi/2,extendInt = "yes")$root[1]
+uniroot(f1,lower=-pi/2,upper=0,extendInt = "yes")$root[1]
+uniroot(f1,lower=0,upper=pi/2,extendInt = "yes")$root[1]
+uniroot(f1,lower=pi/2,upper=pi,extendInt = "yes")$root[1]
+
+theta.mom <- c(-3.236988, 0.09539388, 3.046199) 
+```
+
+
+##(c)
+
+Based on solutions in (b): -3.236988 gives the result as -3.112471. 0.09539388 gives the result as 0.003118157. 3.046199 gives the result as 3.170715.
+
+
+```{r}
+library(elliptic)
+x <- c(3.91, 4.85, 2.28, 4.06, 3.70, 4.04, 5.46, 3.53, 2.28, 1.96,
+       2.53, 3.88, 2.22, 3.47, 4.82, 2.46, 2.99, 2.54, 0.52)
+
+f <- function(theta){
+  f <- 0
+  i <- 1
+  for (i in 1:19){
+  f <- f + sin(theta-x[i])/(1-cos(theta-x[i])) 
+  }
+  return(f)
+}
+
+
+fdash <- function(theta){
+  f.d <- sum(  -1 / (1-cos(theta-x)))
+  return(f.d)
+}
+
+theta.mom <- c(-3.236988, 0.09539388, 3.046199)
+
+newton_raphson( -3.236988,f,fdash,maxiter=1000)
+newton_raphson( 0.09539388,f,fdash,maxiter=1000)
+newton_raphson( 3.046199,f,fdash,maxiter=1000)
+```
+
+##(d)
+
+Starting point of -2.7 will give the result as -2.668857. Starting point of 2.7 will give the result as 2.848415. This indicates that the chosen of initial point is a very sensitive factor to the optimized result.
+
+```{r}
+newton_raphson(-2.7,f,fdash,maxiter=100)
+newton_raphson(2.7,f,fdash,maxiter=100)
+```
+
+##(e)
+
+```{r, warning = FALSE}
+N_R <- function (initial, f, fdash, maxiter, give = TRUE, tol = .Machine$double.eps) 
+{
+  old.guess <- initial
+  for (i in seq_len(maxiter)) {
+    new.guess <- old.guess - f(old.guess)/fdash(old.guess)
+    jj <- f(new.guess)
+    if (is.na(jj) | is.infinite(jj)) {
+      break
+    }
+    if (near.match(new.guess, old.guess) | abs(jj) < tol) {
+      if (give) {
+        return(list(root = new.guess, f.root = jj, iter = i))
+      }
+      else {
+        return(new.guess)
+      }
+    }
+    old.guess <- new.guess
+  }
+  return(list(root = "Failed to Converge", f.root = jj, iter = i))
+}
+
+s.p <- seq(from = -pi, to = pi, length.out = 200)
+
+
+out <- data.frame(
+  start.point <- s.p[1:200],
+  root <- rep(0,200)
+)
+names(out) <- c("start.point","root")
+
+for(i in 1:200) {
+  result <- N_R(s.p[i],f ,fdash, maxiter=1000)
+  out[i,2] <- result$root
+}
+target <- which(out$root == "Failed to Converge")
+out$root <- round(as.numeric(out$root), digits = 10)
+out$root[target] <- c("Failed to Converge")
+out$root <-as.factor(out$root) 
+#There are 18 levels
+i <- 1
+for (i in 1:length(levels(out$root))){
+  subgrp <- data.frame(
+    start.point <- rep(0,length(which(out$root == levels(out$root)[i]))),
+    root <- rep(0,length(which(out$root == levels(out$root)[i])))
+  )
+  names(subgrp) <- c("start.point","root")
+  subgrp$start.point <- out[which(out$root == levels(out$root)[i]),1]
+  subgrp$root <- out[which(out$root == levels(out$root)[i]),2]
+  assign(paste0("root.",i), subgrp)
+}
+
+```
+
+```{r, echo = FALSE}
+
+kable(root.9, caption = " Result type 1")
+kable(root.8, caption = " Result type 2")
+kable(root.7, caption = " Result type 3")
+kable(root.6, caption = " Result type 4")
+kable(root.5, caption = " Result type 5")
+kable(root.4, caption = " Result type 6")
+kable(root.3, caption = " Result type 7")
+kable(root.2, caption = " Result type 8")
+kable(root.1, caption = " Result type 9")
+kable(root.10, caption = " Result type 10")
+kable(root.11, caption = " Result type 11")
+kable(root.12, caption = " Result type 12")
+kable(root.13, caption = " Result type 13")
+kable(root.14, caption = " Result type 14")
+kable(root.15, caption = " Result type 15")
+kable(root.16, caption = " Result type 16")
+kable(root.17, caption = " Result type 17")
+kable(root.18, caption = " Result type 18")
+```
+
+#3
+
+##(a)
+First, we need to find a suitable initial value for K and r. From the results.
+From the given data, it is reasonable to assume $K_{0} = 1200$.
+For $r$, we need to derive the equation of $r$ involving $K$ and $N_{t}$.
+We have:
+$$N_t=\frac{2K}{2+(K-2)exp(-rt)}$$
+$$exp(-rt)=\frac{2(K-N_t)}{N_t(K-2)}$$
+$$rt= ln\frac{N_t(K-2)}{2(K-N_t)}$$
+$$r= \frac{1}{t}*ln\frac{N_t(K-2)}{2(K-N_t)}$$
+Next we plug in all observed $N_{t}$ and $t$ to calculated a series of $r$. The mean of this series will be used as the initial value of $r$. 
+
+Based on these, initial values are:
+$$(K_{0},r_{0}) = (1200,0.1716788)$$
+Using "nls" function, the optimized value is:
+$$(K,r) = (1049.4069185 ,0.1182685)$$
+
+```{r}
+beetles <- data.frame(
+  days = c(0, 8, 28, 41, 63, 69, 97, 117, 135, 154),
+  beetles = c(2, 47, 192, 256, 768, 896, 1120, 896, 1184, 1024))
+
+K <- 1200
+r.t <- log((beetles$beetles*(K-2))/(K - beetles$beetles)*2)
+r.series <- r.t / beetles$days
+mean(r.series[2:10])
+#r <- 0.1716788
+
+#theta1 <- N
+#theta2 <- r
+#beetles ~ theta1*2/(2+(theta1-2)exp(-1*theta2*days)) 
+pop.mod <- nls(beetles ~ N*2/(2+(N-2)*exp((-r)*days)),start=list(N = 1200, r = 0.1716788),data=beetles, trace=TRUE)
+
+```
+
+##(b)
+
+```{r}
+K <- seq(12,1200, by = (1200-12)/99) 
+r <- seq(0.0100,1, by = (1 - 0.0100)/99)
+
+n.b <- as.numeric(beetles$beetles)
+t.d <- as.numeric(beetles$days)
+
+sse <- function(K,r){
+    error.sq <- sum((n.b - (K*2)/(2+(K-2)*exp(-r*t.d)))^2)
+    return(error.sq)
+}
+
+z <- matrix(rep(0,10000),nrow = 100)
+j <- 1 #for K
+k <- 1 #for r
+for (j in 1:100){
+  for(k in 1:100){
+    z[j,k] <- sse(K[j],r[k])
+  }
+}
+
+
+filled.contour(K,r,z, plot.title = title (main = "Contour plot of SSE", xlab = "K",
+                                          ylab = "r"), key.title = title(main = "SSE"))
+contour(K, r, z, xlab = 'K', ylab = 'r', plot.title = title ("Contour plot of SSE"))
+```
+
+##(c)
+
+Using "nlm" function again, we have the estimated value as follows:
+
+$$(K,r,\sigma) = (820.3811422, 0.1926394, 0.6440836)$$
+By solving the hessian matrix, the variances of the related parameters are:
+$$(var(K),var(r),var(\sigma) = (6.262790*10^4, 4.006745*10^{-3}, 2.075824*10^{-2})$$
+These results shows a larger departure from pervious K and r, one explaination could be the size of the observation set is not sufficient.
+
+```{r, warning = FALSE, message = FALSE}
+mlogl3 <- function(theta, N, days) {
+  K <- theta[1]
+  r <- theta[2]
+  sigma <- theta[3]
+  t <- days
+  mu <- log((K*2)/(2+(K-2)*exp(-r*t)))
+  - sum(dnorm(log(N), mu, sigma, log = TRUE))
+}
+
+sqrt(var(log(beetles$beetles)))
+#2.03
+theta.start <- c(1200, 0.17,2.03)
+out <- nlm(mlogl3, theta.start, N=beetles$beetles,days=beetles$days,hessian = TRUE)
+out
+theta.hat <- out$estimate
+#K = 820.3811422 , r = 0.1926394, sigma = 0.6440836
+theta.hat
+hes <- out$hessian
+hes
+var.matrix <- solve(hes)
+# 6.262790e+04, 4.006745e-03, 2.075824e-02
+diag(var.matrix)
+```
+
+
