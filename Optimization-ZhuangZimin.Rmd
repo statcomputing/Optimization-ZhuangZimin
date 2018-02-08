@@ -390,7 +390,7 @@ Using "nlm" function again, we have the estimated value as follows:
 
 $$(K,r,\sigma) = (820.3811422, 0.1926394, 0.6440836)$$
 By solving the hessian matrix, the variances of the related parameters are:
-$$(var(K),var(r),var(\sigma) = (6.262790*10^4, 4.006745*10^{-3}, 2.075824*10^{-2})$$
+$$(var(K),var(r),var(\sigma)) = (6.262790*10^4, 4.006745*10^{-3}, 2.075824*10^{-2})$$
 These results shows a larger departure from pervious K and r, one explaination could be the size of the observation set is not sufficient.
 
 ```{r, warning = FALSE, message = FALSE}
